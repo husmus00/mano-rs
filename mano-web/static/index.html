@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mano Machine Simulator</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background-color: #2d2d30;
+            border: 1px solid #3e3e42;
+            border-radius: 5px;
+            padding: 15px;
+        }
+
+        .panel h3 {
+            margin-top: 0;
+            color: #4fc3f7;
+            border-bottom: 1px solid #3e3e42;
+            padding-bottom: 10px;
+        }
+
+        .registers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .register {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 10px;
+            background-color: #3c3c3c;
+            border-radius: 3px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #0e639c;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background-color: #1177bb;
+        }
+
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 8px 12px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .status.running { background-color: #4caf50; }
+        .status.halted { background-color: #f44336; }
+        .status.ready { background-color: #ff9800; }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            border: 1px solid #3e3e42;
+            border-radius: 3px;
+            padding: 10px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .messages {
+            height: 200px;
+            overflow-y: auto;
+            background-color: #1e1e1e;
+            border: 1px solid #3e3e42;
+            border-radius: 3px;
+            padding: 10px;
+        }
+
+        .message {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+
+        .message.error { color: #f44336; }
+        .message.info { color: #4caf50; }
+        .message.debug { color: #999; }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .memory-cell {
+            padding: 5px;
+            background-color: #3c3c3c;
+            border-radius: 3px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .error {
+            color: #f44336;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mano Machine Simulator</h1>
+
+    <div class="container">
+        <div class="panel">
+            <h3>Program</h3>
+            <textarea id="program" placeholder="Enter your Mano assembly program here...">   ORG 0    /Origin of program is location 0
+   LDA A    /Load operand from location A
+   ADD B    /Add operand from location B
+   STA C    /Store sum in location C
+   HLT      /Halt computer
+A, DEC 83   /Decimal operand
+B, DEC -23  /Decimal operand
+C, DEC 0    /Sum stored in location C
+   END      /End of symbolic program</textarea>
+
+            <div class="controls">
+                <button onclick="loadProgram()">Load Program</button>
+                <button onclick="stepMachine()" id="stepBtn" disabled>Step</button>
+                <button onclick="resetMachine()" id="resetBtn" disabled>Reset</button>
+                <span id="status" class="status ready">Ready</span>
+            </div>
+
+            <div id="error" class="error" style="display: none;"></div>
+        </div>
+
+        <div class="panel">
+            <h3>Registers</h3>
+            <div class="registers-grid">
+                <div class="register">
+                    <span>PC:</span>
+                    <span id="pc">0x0000</span>
+                </div>
+                <div class="register">
+                    <span>AC:</span>
+                    <span id="ac">0x0000</span>
+                </div>
+                <div class="register">
+                    <span>IR:</span>
+                    <span id="ir">0x0000</span>
+                </div>
+                <div class="register">
+                    <span>AR:</span>
+                    <span id="ar">0x0000</span>
+                </div>
+                <div class="register">
+                    <span>DR:</span>
+                    <span id="dr">0x0000</span>
+                </div>
+                <div class="register">
+                    <span>E:</span>
+                    <span id="e">0x0000</span>
+                </div>
+                <div class="register">
+                    <span>SC:</span>
+                    <span id="sc">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>Memory</h3>
+            <div id="memory" class="memory-grid"></div>
+        </div>
+
+        <div class="panel">
+            <h3>Messages</h3>
+            <div id="messages" class="messages"></div>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = null;
+
+        async function createSession() {
+            try {
+                const response = await fetch('/api/session', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    sessionId = data.data.session_id;
+                    updateUI(data.data.state);
+                    console.log('Session created:', sessionId);
+                }
+            } catch (error) {
+                showError('Failed to create session: ' + error.message);
+            }
+        }
+
+        async function loadProgram() {
+            if (!sessionId) await createSession();
+
+            const program = document.getElementById('program').value
+                .split('\n')
+                .filter(line => line.trim() !== '');
+
+            try {
+                const response = await fetch(`/api/session/${sessionId}/load`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ program })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    updateUI(data.data);
+                    document.getElementById('stepBtn').disabled = false;
+                    document.getElementById('resetBtn').disabled = false;
+                    hideError();
+                    addMessages(data.messages);
+                } else {
+                    showError(data.error || 'Failed to load program');
+                    addMessages(data.messages);
+                }
+            } catch (error) {
+                showError('Failed to load program: ' + error.message);
+            }
+        }
+
+        async function stepMachine() {
+            if (!sessionId) return;
+
+            try {
+                const response = await fetch(`/api/session/${sessionId}/step`, { method: 'POST' });
+                const data = await response.json();
+
+                if (data.success) {
+                    updateUI(data.data);
+                    addMessages(data.messages);
+                } else {
+                    showError(data.error || 'Execution error');
+                    addMessages(data.messages);
+                }
+            } catch (error) {
+                showError('Failed to step: ' + error.message);
+            }
+        }
+
+        async function resetMachine() {
+            if (!sessionId) return;
+
+            try {
+                const response = await fetch(`/api/session/${sessionId}/reset`, { method: 'POST' });
+                const data = await response.json();
+
+                if (data.success) {
+                    updateUI(data.data);
+                    document.getElementById('stepBtn').disabled = true;
+                    document.getElementById('resetBtn').disabled = true;
+                    clearMessages();
+                    hideError();
+                }
+            } catch (error) {
+                showError('Failed to reset: ' + error.message);
+            }
+        }
+
+        function updateUI(state) {
+            // Update registers
+            document.getElementById('pc').textContent = `0x${state.program_counter.toString(16).toUpperCase().padStart(4, '0')}`;
+            document.getElementById('ac').textContent = `0x${state.accumulator.toString(16).toUpperCase().padStart(4, '0')}`;
+            document.getElementById('ir').textContent = `0x${state.instruction_register.toString(16).toUpperCase().padStart(4, '0')}`;
+            document.getElementById('ar').textContent = `0x${state.address_register.toString(16).toUpperCase().padStart(4, '0')}`;
+            document.getElementById('dr').textContent = `0x${state.data_register.toString(16).toUpperCase().padStart(4, '0')}`;
+            document.getElementById('e').textContent = `0x${state.extend_register.toString(16).toUpperCase().padStart(4, '0')}`;
+            document.getElementById('sc').textContent = state.sequence_counter.toString();
+
+            // Update status
+            const statusEl = document.getElementById('status');
+            if (state.is_halted) {
+                statusEl.textContent = 'Halted';
+                statusEl.className = 'status halted';
+                document.getElementById('stepBtn').disabled = true;
+            } else if (state.is_running) {
+                statusEl.textContent = 'Running';
+                statusEl.className = 'status running';
+            } else {
+                statusEl.textContent = 'Ready';
+                statusEl.className = 'status ready';
+            }
+
+            // Update memory
+            const memoryEl = document.getElementById('memory');
+            memoryEl.innerHTML = '';
+
+            state.memory_snapshot.forEach((value, addr) => {
+                if (value !== 0) {
+                    const cell = document.createElement('div');
+                    cell.className = 'memory-cell';
+                    cell.innerHTML = `[${addr.toString(16).toUpperCase().padStart(4, '0')}]<br>0x${value.toString(16).toUpperCase().padStart(4, '0')}`;
+                    memoryEl.appendChild(cell);
+                }
+            });
+        }
+
+        function addMessages(messages) {
+            const messagesEl = document.getElementById('messages');
+            messages.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `message ${msg.level}`;
+                div.textContent = msg.message;
+                messagesEl.appendChild(div);
+            });
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        function clearMessages() {
+            document.getElementById('messages').innerHTML = '';
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+
+        // Initialize
+        createSession();
+    </script>
+</body>
+</html>
