@@ -49,9 +49,12 @@ impl App {
     }
 
     fn step(&mut self) {
+        use mano_lib::message::Messages;
+
         if !self.machine.is_halted() && self.machine.is_primed() {
-            let result = self.machine.tick();
-            for entry in result.entries {
+            let mut messages = Messages::new();
+            self.machine.tick(&mut messages);
+            for entry in messages.entries {
                 self.messages.push(entry);
             }
 
@@ -74,23 +77,29 @@ impl App {
     }
 
     fn reset(&mut self) {
-        let _ = self.machine.reset();
+        use mano_lib::message::Messages;
+
+        let mut messages = Messages::new();
+        self.machine.reset(&mut messages);
         self.messages.clear();
         self.auto_run = false;
     }
 }
 
 fn main() -> Result<()> {
+    use mano_lib::message::Messages;
+
     let args = Args::parse();
 
     // Load and prime the machine
     let mut machine = Machine::new();
     let program = read_file(&args.file)?;
-    let result = machine.prime(program);
+    let mut messages = Messages::new();
+    machine.prime(program, &mut messages);
 
-    if result.has_errors() {
+    if messages.has_errors() {
         println!("Failed to load program:");
-        for (level, msg) in &result.entries {
+        for (level, msg) in &messages.entries {
             if matches!(level, Level::Error) {
                 println!("  ERROR: {}", msg);
             }
