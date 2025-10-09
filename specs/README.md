@@ -1,19 +1,12 @@
-# Mano Machine Specifications
+# Frontend Specifications
 
-This directory contains specifications for the various Mano Machine simulator interfaces.
+This directory contains specifications for the various Mano Machine simulator interfaces for use with LLM-based agentic coding.
 
 ## Available Interfaces
 
 - **[CLI](cli.md)** - Command-line interface for running Mano assembly programs
 - **[TUI](tui.md)** - Terminal user interface with interactive debugging
-- **[Web](web.md)** - Web-based API and frontend interface
+- **[Web](web.md)** - WASM-based web interface with interactive debugging
 
-## Core Architecture
-
-All interfaces implement the same Mano Machine architecture:
-- 16-bit word size
-- 4K memory (4096 words)
-- Basic Computer instruction set
-- Two-pass assembler
 
 For implementation details, see the respective interface specifications.
