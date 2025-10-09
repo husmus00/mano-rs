@@ -1,6 +1,6 @@
 # Mano Machine Simulator
 
-A Rust implementation of the Mano Machine RISC CPU as ..
+A Rust library and simulator for the Mano Machine RISC CPU
 
 This project consists of a library (`mano-lib`) for constructing Mano Machine simulators, and multiple frontends.
 
