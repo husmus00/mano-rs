@@ -1,18 +1,37 @@
 [package]
 name = "mano-web"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
 
 [[bin]]
 name = "mano-web"
 path = "src/main.rs"
+required-features = ["ssr"]
 
 [dependencies]
-mano-lib = { workspace = true, features = ["serde"] }
-axum = { workspace = true }
-tokio = { workspace = true, features = ["full"] }
-tower = { workspace = true }
-serde = { workspace = true }
-anyhow = { workspace = true }
-clap = { workspace = true }
-uuid = { version = "1.0", features = ["v4"] }
+mano-lib = { workspace = true }
+
+# Leptos framework
+leptos = { version = "0.6", features = ["csr"] }
+leptos_meta = { version = "0.6", features = ["csr"] }
+
+# WASM dependencies
+wasm-bindgen = "0.2"
+console_error_panic_hook = "0.1"
+console_log = "1.0"
+log = "0.4"
+
+# Server-only dependencies (for CLI mode)
+axum = { workspace = true, optional = true }
+tokio = { workspace = true, features = ["full"], optional = true }
+tower = { workspace = true, optional = true }
+tower-http = { version = "0.5", features = ["fs"], optional = true }
+anyhow = { workspace = true, optional = true }
+
+[features]
+default = []
+csr = ["leptos/csr", "leptos_meta/csr"]
+ssr = ["leptos/ssr", "leptos_meta/ssr", "dep:axum", "dep:tokio", "dep:tower", "dep:tower-http", "dep:anyhow"]
