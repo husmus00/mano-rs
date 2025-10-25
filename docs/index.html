@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Mano Machine Simulator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="/mano-rs/main-abf7c5ac53470efc.css" integrity="sha384-eVRMnYRXu/H/TMcasY1kpEL8hCPkdrBWfG+f3fn+460WuaBUNJ5NEFeykTR1FbjD"/>
+    <link rel="stylesheet" href="/mano-rs/solarised-3c31b9f26c4efc40.css" integrity="sha384-OuBu6wB07eJZWmLbLsLnilpd0OoGq4Y4wmwCxeGjPkPrAYOkcOuI9XAHbNbq052I"/>
+  <link rel="modulepreload" href="/mano-rs/mano-web-8f3b103be6a3bfad.js" crossorigin="anonymous" integrity="sha384-3IaGOxUwz3MHP9u/DuKtgqMBPPf2gmfnw6C2eO/ICekdJ2HUOSgSzfMLSJCrdGxd"><link rel="preload" href="/mano-rs/mano-web-8f3b103be6a3bfad_bg.wasm" crossorigin="anonymous" integrity="sha384-tC1ClG9V2RzHD+PRMc738Hz1Ibg1MA2eTEmxgY3pOhAyDZgKtGc2sDXuP5/lAGi0" as="fetch" type="application/wasm"></head>
+  <body>
+    <noscript>This application requires JavaScript to be enabled.</noscript>
+  
+<script type="module">
+import init, * as bindings from '/mano-rs/mano-web-8f3b103be6a3bfad.js';
+const wasm = await init({ module_or_path: '/mano-rs/mano-web-8f3b103be6a3bfad_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script></body>
+</html>
