@@ -1,2 +1,5 @@
 /target
 /.idea
+
+# Trunk build artifacts (WASM output)
+mano-web/dist/
