@@ -1,8 +1,6 @@
-# Mano Machine Simulator
+# Mano Machine Emulator Implementations
 
-A Rust library and emulator for the Mano Machine RISC CPU
-
-This project consists of a library (`mano-lib`) for constructing Mano Machine simulators, and multiple frontends.
+A collection of emulator for the Mano Machine RISC CPU built using my [`mano`](https://github.com/husmus00/mano-lib) library
 
 # The Mano Machine
 
@@ -10,19 +8,9 @@ The Mano Machine is a hypothetical RISC CPU designed by M. Morris Mano which app
 
 All rights go to M. Morris Mano and the original publishers of his book.
 
+# Aplications
 
-## Architecture
-
-This project is organized as a Rust workspace with the following components:
-
-### Core Library (`mano-lib`)
-- **Machine simulation engine** - Complete implementation of the Mano computer architecture
-- **CPU execution** - Instruction fetch, decode, and execute cycles with stepping capability
-- **Assembler** - Two-pass assembler for Mano assembly language
-- **Storage management** - Program loading and symbol table management
-- **Message system** - Structured logging and error reporting
-
-### Frontend Applications
+This project is organized as a Rust workspace with three applications:
 
 #### CLI Frontend (`mano-cli`)
 Command-line interface for the Mano machine simulator.
