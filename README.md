@@ -1,4 +1,4 @@
-# Mano Machine Emulator
+# Mano Machine Simulator
 
 A Rust library and emulator for the Mano Machine RISC CPU
 
