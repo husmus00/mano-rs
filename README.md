@@ -1,6 +1,6 @@
 # Mano Machine Emulator Implementations
 
-A collection of emulator for the Mano Machine RISC CPU built using my [`mano`](https://github.com/husmus00/mano-lib) library
+A collection of emulators for the Mano Machine RISC CPU built using my [`mano`](https://github.com/husmus00/mano-lib) library
 
 # The Mano Machine
 
