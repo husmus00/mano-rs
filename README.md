@@ -8,7 +8,7 @@ The Mano Machine is a hypothetical RISC CPU designed by M. Morris Mano which app
 
 All rights go to M. Morris Mano and the original publishers of his book.
 
-# Aplications
+# Applications
 
 This project is organized as a Rust workspace with three applications:
 
